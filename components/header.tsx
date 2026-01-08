@@ -8,6 +8,7 @@ import {
   FlaskConical,
   ChevronDown,
   Trophy,
+  Menu,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,6 +23,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useToast } from '@/components/ui/use-toast';
 import { UserNav } from '@/components/user-nav';
 import WalletConnect from '@/components/wallet-connect';
@@ -128,12 +136,12 @@ export function Header() {
         <div className="flex items-center">
           <Link
             href="/"
-            className="flex items-center space-x-2 mr-6 group relative"
+            className="flex items-center space-x-2 mr-2 sm:mr-6 group relative"
           >
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-              className="w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center doodle-wiggle overflow-hidden border-2 border-white/20"
+              className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center doodle-wiggle overflow-hidden border-2 border-white/20"
             >
               <div className="relative w-full h-full">
                 <Image
@@ -198,12 +206,14 @@ export function Header() {
           </nav>
         </div>
 
-        <div className="flex items-center space-x-3">
-          <WalletConnect />
+        <div className="flex items-center space-x-2">
+          <div className="hidden sm:block">
+            <WalletConnect />
+          </div>
           <Button
             variant="outline"
             size="sm"
-            className="hidden md:flex bg-primary/20 hover:bg-primary/30 text-primary backdrop-blur-sm comic-pop comic-text-bold border-white/10"
+            className="hidden lg:flex bg-primary/20 hover:bg-primary/30 text-primary backdrop-blur-sm comic-pop comic-text-bold border-white/10"
             onClick={handleCreateClick}
           >
             <PenSquare className="h-4 w-4 mr-2" />
@@ -211,6 +221,79 @@ export function Header() {
           </Button>
           <ModeToggle />
           <UserNav />
+
+          {/* Mobile Menu */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white hover:bg-white/10"
+                >
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="bg-[#36454F] border-l-4 border-black text-white p-0">
+                <SheetHeader className="p-6 border-b-4 border-black">
+                  <SheetTitle className="text-white comic-pop text-xl flex items-center gap-2">
+                    <div className="w-8 h-8 relative">
+                      <Image src="/logo.png" alt="Logo" fill className="object-contain" />
+                    </div>
+                    GroqTales
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col p-4 space-y-2">
+                  <div className="mb-4 sm:hidden">
+                    <WalletConnect />
+                  </div>
+                  {navItems.map((item, index) => (
+                    <div key={index} className="flex flex-col">
+                      {item.type === 'dropdown' ? (
+                        <>
+                          <div className="px-4 py-2 text-sm font-bold uppercase text-white/60 mt-2">
+                            {item.label}
+                          </div>
+                          {item.items?.map((subItem) => (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              className="px-6 py-3 text-lg hover:bg-white/10 rounded-md transition-colors comic-text flex items-center"
+                            >
+                              {subItem.icon}
+                              {subItem.label}
+                            </Link>
+                          ))}
+                        </>
+                      ) : (
+                        item.href && (
+                          <Link
+                            href={item.href}
+                            className="px-4 py-3 text-lg hover:bg-white/10 rounded-md transition-colors comic-text flex items-center"
+                          >
+                            {item.icon}
+                            {item.label}
+                          </Link>
+                        )
+                      )}
+                    </div>
+                  ))}
+                  <div className="pt-4 mt-4 border-t-2 border-white/10">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-lg bg-primary/20 hover:bg-primary/30 text-primary border-white/10 comic-pop"
+                      onClick={() => {
+                        handleCreateClick();
+                      }}
+                    >
+                      <PenSquare className="h-5 w-5 mr-3" />
+                      Create Story
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
       </div>
 
