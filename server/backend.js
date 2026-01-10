@@ -12,13 +12,16 @@ const rateLimit = require('express-rate-limit');
 const compression = require('compression');
 const morgan = require('morgan');
 
-const connectDB = require('./config/db');
+const { connectDB, closeDB } = require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Connect to Database
-connectDB();
+// Connect to Database with retry configuration from env
+const DB_MAX_RETRIES = parseInt(process.env.DB_MAX_RETRIES || '5');
+const DB_RETRY_DELAY_MS = parseInt(process.env.DB_RETRY_DELAY_MS || '2000');
+
+connectDB(DB_MAX_RETRIES, DB_RETRY_DELAY_MS);
 
 // Security middleware
 app.use(
