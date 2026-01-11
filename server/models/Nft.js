@@ -1,8 +1,46 @@
 const { timeStamp } = require('console');
 const mongoose = require('mongoose');
 
+const MetadataSchema = new mongoose.Schema(
+    {
+        name:{
+            type:String,
+            required:true,
+            trim:true,
+        },
+        description:{
+            type:String,
+            required:true,
+            trim:true,
+        },
+        image:{             
+            type:String,
+            required:true,
+            trim:true
+        },
+        attributes:{
+            type:Array,
+            default:[],
+        }
+    },
+    { _id:false }
+);
+
 const NftSchema = new mongoose.Schema(
     {
+        tokenId:{
+            type:String,
+            unique:true,
+            required:[true,"Please provide unique token ID"],
+            trim:true,
+            minlength:[3,"Token ID must be at least 3 characters long"],
+            validate:{
+                validator:function(v){
+                    return /^[a-zA-Z0-9-_]+$/.test(v);
+                },
+                message:'Token ID can only contain alphanumeric characters, hyphens, and underscores'
+            }
+        },
         storyId:{
             type:mongoose.Schema.Types.ObjectId,
             ref:'Story',
@@ -19,7 +57,7 @@ const NftSchema = new mongoose.Schema(
             }
         },      
         metadataURI:{
-            type:String,
+            type:MetadataSchema,
             required:[true,"Please provide metadata URI"],
             trim:true,
         },
@@ -44,14 +82,15 @@ const NftSchema = new mongoose.Schema(
         },
         price:{
             type:Number,
-            default:0,  
+            default:0, 
+            min:[0,"Price cannot be negative"], 
         },
         isListed:{
             type:Boolean,
             default:false,
         },
     },
-    { timeStamps:true }
+    { timestamps:true }
 );
 
 const Nft = mongoose.model('Nft',NftSchema);
