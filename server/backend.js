@@ -106,12 +106,7 @@ app.use((err, req, res, next) => {
 const gracefulShutdown = async (signal) => {
   console.log(`${signal} received, shutting down gracefully`);
   try {
-    // Close MongoDB connection using mongoose
-    const mongoose = require('mongoose');
-    if (mongoose.connection.readyState === 1) {
-      await mongoose.connection.close();
-      console.log('MongoDB connection closed');
-    }
+    await closeDB();
     console.log('Cleanup completed');
     process.exit(0);
   } catch (error) {

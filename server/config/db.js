@@ -4,9 +4,7 @@ const mongoose = require('mongoose');
  * Connects to MongoDB with retry logic and exponential backoff
  * Part of Issue #166: Database Connection Retries and Health Check Endpoint
  */
-const connectDB = async () => {
-  const maxRetries = parseInt(process.env.DB_MAX_RETRIES || '5');
-  const retryDelayMs = parseInt(process.env.DB_RETRY_DELAY_MS || '2000');
+const connectDB = async (maxRetries = 5, retryDelayMs = 2000) => {
   const uri =
     process.env.MONGODB_URI || 'mongodb://localhost:27017/groqtales';
 
@@ -51,4 +49,17 @@ const connectDB = async () => {
   }
 };
 
-module.exports = connectDB;
+/**
+ * Closes the MongoDB connection gracefully
+ */
+const closeDB = async () => {
+  try {
+    await mongoose.connection.close();
+    console.log('[Mongoose] Connection closed gracefully');
+  } catch (error) {
+    console.error('[Mongoose] Error closing connection:', error.message);
+    throw error;
+  }
+};
+
+module.exports = { connectDB, closeDB };

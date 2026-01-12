@@ -72,8 +72,13 @@ export async function connectWithRetry(
       await client.connect();
 
       // Verify connection with ping
-      const adminDb = client.db().admin();
-      await adminDb.ping();
+      try {
+        const adminDb = client.db().admin();
+        await adminDb.ping();
+      } catch (pingError) {
+        await client.close();
+        throw pingError;
+      }
 
       // Update state
       state.client = client;
@@ -153,6 +158,9 @@ export async function closeConnection(): Promise<void> {
       await state.client.close();
       state.isConnected = false;
       state.client = null;
+      state.lastError = null;
+      state.connectionAttempts = 0;
+      state.lastConnectionTime = null;
       console.log('[DB] Connection closed gracefully');
     } catch (error: any) {
       console.error('[DB] Error closing connection:', error.message);
@@ -177,15 +185,25 @@ export async function measureLatency(): Promise<number | null> {
     return latencyMs;
   } catch (error) {
     console.error('[DB] Error measuring latency:', error);
+    state.isConnected = false;
+    state.lastError = error instanceof Error ? error.message : 'Ping failed';
     return null;
   }
 }
+
+// Guard to prevent duplicate signal handler registration
+let shutdownHandlersRegistered = false;
 
 /**
  * Sets up graceful shutdown handlers for the process
  * Should be called once during application bootstrap
  */
 export function setupGracefulShutdown(): void {
+  if (shutdownHandlersRegistered) {
+    return;
+  }
+  shutdownHandlersRegistered = true;
+
   const shutdownHandler = async (signal: string) => {
     console.log(`[Server] ${signal} received, shutting down gracefully...`);
     try {

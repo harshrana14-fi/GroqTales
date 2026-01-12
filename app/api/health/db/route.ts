@@ -72,7 +72,7 @@ export async function GET(): Promise<NextResponse<HealthResponse>> {
 
     // Determine status based on latency
     const status = latencyMs > 1000 ? 'degraded' : 'ok';
-    const statusCode = status === 'ok' ? 200 : 503;
+    const statusCode = 200; // Always 200 if connected; monitoring tools check status field
 
     return NextResponse.json(
       {
