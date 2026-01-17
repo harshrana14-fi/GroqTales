@@ -25,7 +25,15 @@ router.get('/profile', async (req, res) => {
 router.patch('/update', async (req, res) => {
   try {
     const updates = req.body;
-
+    if(updates.password || updates.role) {
+      return res.status(400).json({ error: 'Cannot update password or role via this endpoint' });
+    }
+    const allowed = ['firstName', 'lastName', 'phone', 'walletAddress', 'email'];
+    Object.keys(updates).forEach(key => {
+      if (!allowed.includes(key)) {
+        delete updates[key];
+      }
+    });
     const updatedProfile = await User.findByIdAndUpdate(
       req.user.id,
       { $set: { ...updates } },
